@@ -4,13 +4,15 @@
 Learn Nix declarations and realizations with version control.
 
 * Packages I want
-python3 (treemacs error)
+python3
 artha
 virtualbox
 zoom
 zotero
-blanket??
+blanket
 cool-retro-term
+htop
+tree
 
 * Log
 ** Started Project [2025-10-11]
