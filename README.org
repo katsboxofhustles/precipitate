@@ -1,0 +1,18 @@
+#+TITLE: My Nix Environment Learning Project
+
+* Goal
+Learn Nix declarations and realizations with version control.
+
+* Packages I want
+python3 (treemacs error)
+artha
+virtualbox
+zoom
+zotero
+blanket??
+cool-retro-term
+
+* Log
+** Started Project [2025-10-11]
+- created git repo
+- opened in spacemacs with Projectile
