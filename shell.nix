@@ -6,11 +6,10 @@ pkgs.mkShell { #Create a shell environment
    python3
    artha
    virtualbox
-   zoom-us
    zotero
    blanket
    cool-retro-term
    htop
    tree
-  ];
+  ]; #zoom-us is non-free but will be added here
 }
