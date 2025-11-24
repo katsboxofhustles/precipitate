@@ -1,7 +1,8 @@
 #+TITLE: System Maintenance Kanban
+#+TODO: TODO DOING | DONE
 
-* In-tray
-** Update Channels
+* Backlog
+** TODO Update Channels
 Requires updating the NixOS channels using the following script that could be tangled to 'channels-update.nix'.
 #+begin_src nix :tangle channels-update.nix
 { pkgs, ... }:
@@ -12,7 +13,7 @@ Requires updating the NixOS channels using the following script that could be ta
 }
 #+end_src
 
-** Rebuild System
+** TODO Rebuild System
 Perform a system rebuild akin to applying apt-get upgrade functionalities, tangled to 'system-update.nix'.
 #+begin_src nix :tangle system-update.nix
 { pkgs, ... }:
@@ -23,8 +24,8 @@ Perform a system rebuild akin to applying apt-get upgrade functionalities, tangl
 }
 #+end_src
 
-* Work
-** Install Debugging Tools
+* In Progress
+** DOING Install Debugging Tools
 These packages facilitate debugging similar to installing diagnostic tools with aptitude.
 #+begin_src nix :tangle install-debug-tools.nix
 let
@@ -40,14 +41,14 @@ in
 }
 #+end_src
 
-** Cleanup Past Builds
+** DOING Cleanup Past Builds
 A script for cleaning up old generational builds, executed via 'nix-collect-garbage'.
 #+begin_src shell :tangle cleanup-builds.sh
 #!/bin/bash
 nix-collect-garbage -d
 #+end_src
 
-** Temporary Build Shell
+** DOING Temporary Build Shell
 For development and debugging tasks, a temporary Nix shell furnished with necessary utilities, tangled to 'build-shell.nix'.
 #+begin_src nix :tangle build-shell.nix
 let
@@ -61,3 +62,5 @@ pkgs.mkShell {
   ];
 }
 #+end_src
+
+* Done
