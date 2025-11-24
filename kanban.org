@@ -2,8 +2,116 @@
 #+TODO: TODO DOING | DONE
 
 * Backlog
-** TODO Update Channels
-Requires updating the NixOS channels using the following script that could be tangled to 'channels-update.nix'.
+** TODO Set Up Automated Backups
+Configure automated backup strategy for system configuration and user data.
+#+begin_src nix :tangle backup-config.nix
+{ pkgs, ... }:
+{
+  services.borgbackup.jobs.system = {
+    paths = [ "/etc/nixos" "/home" ];
+    repo = "/var/backup/system";
+    encryption.mode = "none";
+    compression = "auto,zstd";
+    startAt = "daily";
+  };
+}
+#+end_src
+
+** TODO Configure System Monitoring
+Set up monitoring for system health and resource usage.
+#+begin_src nix :tangle monitoring.nix
+{ pkgs, ... }:
+{
+  services.prometheus = {
+    enable = true;
+    exporters.node = {
+      enable = true;
+      enabledCollectors = [ "systemd" "processes" ];
+    };
+  };
+}
+#+end_src
+
+** TODO Implement Log Rotation
+Configure log rotation to manage disk space and maintain audit trails.
+#+begin_src nix :tangle log-rotation.nix
+{ pkgs, ... }:
+{
+  services.logrotate = {
+    enable = true;
+    settings = {
+      "/var/log/*.log" = {
+        rotate = 7;
+        weekly = true;
+        compress = true;
+        delaycompress = true;
+      };
+    };
+  };
+}
+#+end_src
+
+** TODO Set Up Firewall Rules
+Define firewall configuration for system security.
+#+begin_src nix :tangle firewall.nix
+{ pkgs, ... }:
+{
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 80 443 ];
+    allowedUDPPorts = [ ];
+  };
+}
+#+end_src
+
+** TODO Create System Recovery Script
+Script to restore system from backup or rebuild from configuration.
+#+begin_src shell :tangle system-recovery.sh
+#!/bin/bash
+# System Recovery Script
+set -e
+
+echo "=== NixOS System Recovery ==="
+
+# Restore configuration
+if [ -d "/var/backup/system/etc/nixos" ]; then
+    cp -r /var/backup/system/etc/nixos/* /etc/nixos/
+    echo "Configuration restored"
+fi
+
+# Rebuild system
+nixos-rebuild switch
+echo "System rebuilt successfully"
+#+end_src
+
+* In Progress
+** DOING Document System Configuration
+Create comprehensive documentation of current system setup as code.
+#+begin_src nix :tangle configuration.nix
+{ config, pkgs, ... }:
+{
+  # System Documentation
+  # This configuration serves as living documentation
+  # All system state is declared here
+
+  system.stateVersion = "24.05";
+
+  # Boot configuration
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  # Networking
+  networking.hostName = "nixos-workstation";
+  networking.networkmanager.enable = true;
+
+  # Timezone and locale
+  time.timeZone = "UTC";
+  i18n.defaultLocale = "en_US.UTF-8";
+}
+#+end_src
+
+** DOING Update Channels
+Requires updating the NixOS channels using the following script.
 #+begin_src nix :tangle channels-update.nix
 { pkgs, ... }:
 {
@@ -13,20 +121,8 @@ Requires updating the NixOS channels using the following script that could be ta
 }
 #+end_src
 
-** TODO Rebuild System
-Perform a system rebuild akin to applying apt-get upgrade functionalities, tangled to 'system-update.nix'.
-#+begin_src nix :tangle system-update.nix
-{ pkgs, ... }:
-{
-  system.activationScripts.rebuild.text = ''
-    nixos-rebuild switch
-  '';
-}
-#+end_src
-
-* In Progress
 ** DOING Install Debugging Tools
-These packages facilitate debugging similar to installing diagnostic tools with aptitude.
+Packages for system debugging and diagnostics.
 #+begin_src nix :tangle install-debug-tools.nix
 let
   pkgs = import <nixpkgs> {};
@@ -37,19 +133,36 @@ in
     strace
     ncdu
     tree
+    lsof
+    iotop
+    nix-tree
   ];
 }
 #+end_src
 
-** DOING Cleanup Past Builds
-A script for cleaning up old generational builds, executed via 'nix-collect-garbage'.
-#+begin_src shell :tangle cleanup-builds.sh
-#!/bin/bash
-nix-collect-garbage -d
+* Done
+** DONE Rebuild System
+Perform a system rebuild to apply configuration changes.
+#+begin_src nix :tangle system-update.nix
+{ pkgs, ... }:
+{
+  system.activationScripts.rebuild.text = ''
+    nixos-rebuild switch
+  '';
+}
 #+end_src
 
-** DOING Temporary Build Shell
-For development and debugging tasks, a temporary Nix shell furnished with necessary utilities, tangled to 'build-shell.nix'.
+** DONE Cleanup Past Builds
+Script for cleaning up old generational builds to reclaim disk space.
+#+begin_src shell :tangle cleanup-builds.sh
+#!/bin/bash
+# Remove old generations and garbage collect
+nix-collect-garbage -d
+nix-store --optimize
+#+end_src
+
+** DONE Temporary Build Shell
+Development shell with build utilities for debugging tasks.
 #+begin_src nix :tangle build-shell.nix
 let
   pkgs = import <nixpkgs> {};
@@ -59,8 +172,26 @@ pkgs.mkShell {
     stdenv
     gcc
     gdb
+    gnumake
   ];
 }
 #+end_src
 
-* Done
+** DONE Create Flake Structure
+Initialize flake-based configuration for reproducible builds.
+#+begin_src nix :tangle flake.nix
+{
+  description = "NixOS System Configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+  };
+
+  outputs = { self, nixpkgs }: {
+    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [ ./configuration.nix ];
+    };
+  };
+}
+#+end_src
